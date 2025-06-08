@@ -2,7 +2,7 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import { ThemeProvider, CssBaseline, Typography, Box, Container, Paper, GlobalStyles, useMediaQuery } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import CharactersTable from './components/CharactersTable';
 import FilterForm from './components/FilterForm';
 import Pagination from './components/Pagination';
@@ -286,6 +286,11 @@ function App() {
   
   // Temayı oluştur
   const theme = useMemo(() => createAppTheme(themeMode), [themeMode]);
+
+  // Sayfa title'ını ayarla
+  useEffect(() => {
+    document.title = 'Rick and Morty Characters - Explore the Multiverse';
+  }, []);
 
   return (
     <Provider store={store}>
