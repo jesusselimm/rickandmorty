@@ -189,25 +189,47 @@ const CharacterTable = React.memo(() => {
             },
           }}
         >
-          <TableCell sx={{ color: theme.palette.text.primary }}>{character.id}</TableCell>
-          <TableCell>
+          <TableCell sx={{ 
+            color: theme.palette.text.primary, 
+            textAlign: 'center',
+            padding: isMobile ? '8px 4px' : '16px',
+            fontSize: isMobile ? '0.8rem' : '1rem'
+          }}>
+            {character.id}
+          </TableCell>
+          <TableCell sx={{ 
+            textAlign: 'center',
+            padding: isMobile ? '8px 4px' : '16px'
+          }}>
             <CharacterImage
               src={character.image}
               alt={character.name}
               onClick={() => isMobile && handleCharacterSelect(character)}
             />
           </TableCell>
-          <TableCell>
-            <Typography variant="body1" fontWeight="medium" sx={{ color: theme.palette.text.primary }}>
+          <TableCell sx={{ padding: isMobile ? '8px 4px' : '16px' }}>
+            <Typography 
+              variant="body1" 
+              fontWeight="medium" 
+              sx={{ 
+                color: theme.palette.text.primary,
+                fontSize: isMobile ? '0.85rem' : '1rem',
+                lineHeight: isMobile ? 1.2 : 1.5
+              }}
+            >
               {character.name}
             </Typography>
           </TableCell>
-          <TableCell>
+          <TableCell sx={{ padding: isMobile ? '8px 4px' : '16px' }}>
             <Chip 
               label={character.status}
               color={getStatusColor(character.status)}
-              size="small"
+              size={isMobile ? "small" : "medium"}
               variant="filled"
+              sx={{
+                fontSize: isMobile ? '0.7rem' : '0.8rem',
+                height: isMobile ? '20px' : 'auto'
+              }}
             />
           </TableCell>
           {!isMobile && (
@@ -247,39 +269,71 @@ const CharacterTable = React.memo(() => {
             </>
           )}
           {isMobile && (
-            <TableCell>
+            <TableCell sx={{ 
+              textAlign: 'center',
+              padding: '8px 4px'
+            }}>
               <IconButton 
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleExpanded(character.id);
                 }}
-                sx={{ color: '#71E066' }}
+                sx={{ 
+                  color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
+                  backgroundColor: theme.palette.mode === 'light' 
+                    ? 'rgba(5, 150, 105, 0.1)' 
+                    : 'rgba(0, 229, 160, 0.1)',
+                  border: theme.palette.mode === 'light'
+                    ? '1px solid rgba(5, 150, 105, 0.2)'
+                    : '1px solid rgba(0, 229, 160, 0.2)',
+                  width: '32px',
+                  height: '32px',
+                  '&:hover': {
+                    backgroundColor: theme.palette.mode === 'light' 
+                      ? 'rgba(5, 150, 105, 0.2)' 
+                      : 'rgba(0, 229, 160, 0.2)',
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease'
+                }}
                 size="small"
               >
-                {expandedRows.has(character.id) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                {expandedRows.has(character.id) ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
               </IconButton>
             </TableCell>
           )}
         </TableRow>
         
         {isMobile && (
-          <TableRow>
-            <TableCell sx={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+          <TableRow sx={{ 
+            backgroundColor: 'transparent',
+            '&:hover': { backgroundColor: 'transparent' }
+          }}>
+            <TableCell 
+              sx={{ 
+                paddingBottom: 0, 
+                paddingTop: 0,
+                paddingLeft: '8px',
+                paddingRight: '8px',
+                border: 'none'
+              }} 
+              colSpan={5}
+            >
               <Collapse in={expandedRows.has(character.id)} timeout="auto" unmountOnExit>
                 <Box sx={{ 
-                  margin: 1, 
-                  padding: 3, 
+                  margin: '8px 0 16px 0', 
+                  padding: '16px', 
                   background: theme.palette.mode === 'light' 
-                    ? 'rgba(255, 255, 255, 0.95)' 
-                    : 'rgba(22, 27, 46, 0.95)',
+                    ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)' 
+                    : 'linear-gradient(135deg, rgba(22, 27, 46, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%)',
                   backdropFilter: 'blur(20px)',
-                  borderRadius: '16px',
+                  borderRadius: '12px',
                   border: theme.palette.mode === 'light'
-                    ? '1px solid rgba(5, 150, 105, 0.2)'
-                    : '1px solid rgba(0, 229, 160, 0.2)',
+                    ? '2px solid rgba(5, 150, 105, 0.15)'
+                    : '2px solid rgba(0, 229, 160, 0.15)',
                   boxShadow: theme.palette.mode === 'light'
-                    ? '0 8px 25px rgba(0, 0, 0, 0.08)'
-                    : '0 8px 32px rgba(0, 0, 0, 0.25)',
+                    ? '0 4px 20px rgba(5, 150, 105, 0.1)'
+                    : '0 4px 20px rgba(0, 229, 160, 0.1)',
                   position: 'relative',
                   overflow: 'hidden',
                   '&::before': {
@@ -288,81 +342,136 @@ const CharacterTable = React.memo(() => {
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: '3px',
+                    height: '2px',
                     background: theme.palette.mode === 'light'
                       ? 'linear-gradient(90deg, #059669 0%, #0EA5E9 100%)'
                       : 'linear-gradient(90deg, #00E5A0 0%, #00D4FF 100%)',
                   },
                 }}>
                   <Typography variant="h6" gutterBottom sx={{ 
-                    background: 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
+                    background: theme.palette.mode === 'light'
+                      ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
+                      : 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                     fontWeight: 700,
-                    mb: 2,
+                    fontSize: '1rem',
+                    mb: 1.5,
                   }}>
-                    Additional Details
+                    Character Details
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.text.primary,
-                      fontSize: '14px',
-                      lineHeight: 1.5,
-                    }}>
-                      <strong style={{ 
-                        color: theme.palette.mode === 'light' ? '#059669' : '#A2DCDD',
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.secondary,
+                        fontSize: '13px',
                         fontWeight: 600,
-                      }}>Species:</strong> {character.species}
-                    </Typography>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.text.primary,
-                      fontSize: '14px',
-                      lineHeight: 1.5,
-                    }}>
-                      <strong style={{ 
-                        color: theme.palette.mode === 'light' ? '#059669' : '#A2DCDD',
+                      }}>
+                        Species:
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.primary,
+                        fontSize: '13px',
+                        fontWeight: 500,
+                      }}>
+                        {character.species}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.secondary,
+                        fontSize: '13px',
                         fontWeight: 600,
-                      }}>Gender:</strong> {character.gender}
-                    </Typography>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.text.primary,
-                      fontSize: '14px',
-                      lineHeight: 1.5,
-                    }}>
-                      <strong style={{ 
-                        color: theme.palette.mode === 'light' ? '#059669' : '#A2DCDD',
+                      }}>
+                        Gender:
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.primary,
+                        fontSize: '13px',
+                        fontWeight: 500,
+                      }}>
+                        {character.gender}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.secondary,
+                        fontSize: '13px',
                         fontWeight: 600,
-                      }}>Origin:</strong> {character.origin.name}
-                    </Typography>
-                    <Typography variant="body2" sx={{ 
-                      color: theme.palette.text.primary,
-                      fontSize: '14px',
-                      lineHeight: 1.5,
-                    }}>
-                      <strong style={{ 
-                        color: theme.palette.mode === 'light' ? '#059669' : '#A2DCDD',
+                        flex: '0 0 auto',
+                        mr: 1
+                      }}>
+                        Origin:
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.primary,
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        textAlign: 'right',
+                        flex: 1
+                      }}>
+                        {character.origin.name}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.secondary,
+                        fontSize: '13px',
                         fontWeight: 600,
-                      }}>Location:</strong> {character.location.name}
-                    </Typography>
-                    <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(0, 229, 160, 0.2)' }}>
+                        flex: '0 0 auto',
+                        mr: 1
+                      }}>
+                        Location:
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        color: theme.palette.text.primary,
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        textAlign: 'right',
+                        flex: 1
+                      }}>
+                        {character.location.name}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ 
+                      mt: 1, 
+                      pt: 1.5, 
+                      borderTop: theme.palette.mode === 'light'
+                        ? '1px solid rgba(5, 150, 105, 0.2)'
+                        : '1px solid rgba(0, 229, 160, 0.2)'
+                    }}>
                       <Typography 
                         variant="body2" 
                         sx={{ 
-                          color: theme.palette.mode === 'light' ? '#0EA5E9' : '#04B5BD',
+                          color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                           cursor: 'pointer',
-                          textDecoration: 'underline',
-                          fontWeight: 600,
-                          fontSize: '14px',
+                          textAlign: 'center',
+                          fontWeight: 700,
+                          fontSize: '13px',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          backgroundColor: theme.palette.mode === 'light' 
+                            ? 'rgba(5, 150, 105, 0.1)' 
+                            : 'rgba(0, 229, 160, 0.1)',
+                          border: theme.palette.mode === 'light'
+                            ? '1px solid rgba(5, 150, 105, 0.2)'
+                            : '1px solid rgba(0, 229, 160, 0.2)',
                           transition: 'all 0.2s ease',
                           '&:hover': {
-                            color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
-                            transform: 'translateX(4px)',
+                            backgroundColor: theme.palette.mode === 'light' 
+                              ? 'rgba(5, 150, 105, 0.2)' 
+                              : 'rgba(0, 229, 160, 0.2)',
+                            transform: 'translateY(-1px)',
                           },
                         }}
                         onClick={() => handleCharacterSelect(character)}
                       >
-                        View Full Details
+                        🔍 View Full Details
                       </Typography>
                     </Box>
                   </Box>
@@ -408,8 +517,28 @@ const CharacterTable = React.memo(() => {
 
   return (
     <ModernTableCard elevation={0}>
-      <TableContainer sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-        <Table sx={{ minWidth: isMobile ? 300 : 800 }} stickyHeader>
+      <TableContainer sx={{ 
+        borderRadius: '12px', 
+        overflow: 'hidden',
+        maxWidth: '100%',
+        '&::-webkit-scrollbar': {
+          height: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          background: theme.palette.mode === 'light' ? '#F1F5F9' : '#161B2E',
+          borderRadius: '4px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: theme.palette.mode === 'light'
+            ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
+            : 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
+          borderRadius: '4px',
+        },
+      }}>
+        <Table sx={{ 
+          minWidth: isMobile ? 'auto' : 800,
+          width: '100%'
+        }} stickyHeader>
             <TableHead sx={{ overflow: 'hidden' }}>
               <TableRow
                 sx={{
@@ -419,18 +548,19 @@ const CharacterTable = React.memo(() => {
                   '& th': {
                     color: '#FFFFFF',
                     fontWeight: 700,
-                    fontSize: '1rem',
+                    fontSize: isMobile ? '0.8rem' : '1rem',
                     letterSpacing: '0.5px',
                     borderBottom: 'none',
                     background: 'none',
                     textTransform: 'uppercase',
+                    padding: isMobile ? '8px 4px' : '16px',
                   },
                 }}
               >
-                <TableCell sx={{ width: '80px' }}>ID</TableCell>
-                <TableCell sx={{ width: '80px' }}>Image</TableCell>
-                <TableCell sx={{ width: '200px' }}>Name</TableCell>
-                <TableCell sx={{ width: '120px' }}>Status</TableCell>
+                <TableCell sx={{ width: isMobile ? '50px' : '80px', textAlign: 'center' }}>ID</TableCell>
+                <TableCell sx={{ width: isMobile ? '60px' : '80px', textAlign: 'center' }}>IMG</TableCell>
+                <TableCell sx={{ width: isMobile ? '120px' : '200px' }}>Name</TableCell>
+                <TableCell sx={{ width: isMobile ? '80px' : '120px' }}>Status</TableCell>
                 {!isMobile && (
                   <>
                     <TableCell sx={{ width: '120px' }}>Species</TableCell>
@@ -440,7 +570,9 @@ const CharacterTable = React.memo(() => {
                   </>
                 )}
                 {isMobile && (
-                  <TableCell sx={{ width: '50px' }}>More</TableCell>
+                  <TableCell sx={{ width: '60px', textAlign: 'center', fontSize: '0.7rem' }}>
+                    More
+                  </TableCell>
                 )}
               </TableRow>
             </TableHead>
