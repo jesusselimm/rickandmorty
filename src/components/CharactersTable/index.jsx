@@ -19,6 +19,9 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+// Components
+import PaginationControl from '../PaginationControl';
+
 // Services and Redux
 import { getCharacters } from '../../services/api';
 import {
@@ -177,45 +180,103 @@ const CharacterTable = React.memo(() => {
     loading = false,
     error = null,
     filters = {},
-    pagination: { currentPage = 1 } = {}, // Safe destructuring with defaults
+    pagination: { currentPage = 1, totalPages = 0, pageSize = 20 } = {}, // Safe destructuring with defaults
   } = useSelector((state) => state.characters || {});
+
+  // Local state for managing all fetched characters and virtual pagination
+  const [allCharacters, setAllCharacters] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   
   // Theme and responsive design
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  /**
+   * Handle page size change - virtual pagination
+   * Since Rick and Morty API doesn't support custom page sizes,
+   * we implement virtual pagination client-side
+   * 
+   * @param {number} newPageSize - New page size
+   */
+  const handlePageSizeChange = useCallback((newPageSize) => {
+    dispatch(setPagination({ 
+      pageSize: newPageSize, 
+      currentPage: 1 // Reset to first page when changing page size
+    }));
+  }, [dispatch]);
+
+  /**
+   * Handle page change - virtual pagination
+   * 
+   * @param {number} newPage - New page number
+   */
+  const handlePageChange = useCallback((newPage) => {
+    dispatch(setPagination({ 
+      currentPage: newPage 
+    }));
+  }, [dispatch]);
   
 
 
   /**
-   * Fetch characters data with comprehensive error handling
-   * Includes retry logic and proper cleanup
+   * Fetch all characters for proper pagination
+   * Since API only returns 20 per page, we need to fetch multiple pages
    */
   useEffect(() => {
-    let isMounted = true; // Prevent state updates on unmounted component
+    let isMounted = true;
     
-    const fetchCharacters = async () => {
+    const fetchAllCharacters = async () => {
       try {
-        // Reset error state before fetching
         dispatch(setError(null));
         dispatch(setLoading(true));
         
-        // Validate inputs
-        if (typeof currentPage !== 'number' || currentPage < 1) {
-          throw new Error('Invalid page number');
-        }
-
-        const response = await getCharacters(currentPage, filters);
+        // First, get the first page to know total pages
+        const firstResponse = await getCharacters(1, filters);
         
-        // Validate API response structure
-        if (!response || !response.results || !Array.isArray(response.results)) {
+        if (!firstResponse || !firstResponse.results) {
           throw new Error('Invalid API response format');
         }
 
-        // Only update state if component is still mounted
+        const totalPages = firstResponse.info?.pages || 1;
+        const totalCount = firstResponse.info?.count || 0;
+        
+        // If only one page, we're done
+        if (totalPages === 1) {
+          if (isMounted) {
+            setAllCharacters(firstResponse.results);
+            setTotalCount(totalCount);
+            
+            // Update pagination info
+            dispatch(setPagination({
+              totalPages: Math.ceil(totalCount / pageSize),
+            }));
+          }
+          return;
+        }
+
+        // Fetch all pages in parallel for better performance
+        const pagePromises = [];
+        for (let page = 1; page <= totalPages; page++) {
+          pagePromises.push(getCharacters(page, filters));
+        }
+
+        const allResponses = await Promise.all(pagePromises);
+        
+        // Combine all characters
+        const allChars = allResponses.reduce((acc, response) => {
+          if (response && response.results) {
+            acc.push(...response.results);
+          }
+          return acc;
+        }, []);
+
         if (isMounted) {
-          dispatch(setCharacters(response.results));
+          setAllCharacters(allChars);
+          setTotalCount(totalCount);
+          
+          // Calculate virtual pagination
           dispatch(setPagination({
-            totalPages: response.info?.pages || 0,
+            totalPages: Math.ceil(totalCount / pageSize),
           }));
         }
         
@@ -223,27 +284,27 @@ const CharacterTable = React.memo(() => {
         console.error('Error fetching characters:', error);
         
         if (isMounted) {
-          // Provide user-friendly error messages
           const errorMessage = error.message === 'Failed to fetch' 
             ? 'Network error. Please check your connection and try again.'
             : error.message || 'An unexpected error occurred while loading characters.';
             
           dispatch(setError(errorMessage));
+          setAllCharacters([]);
+          setTotalCount(0);
         }
       } finally {
         if (isMounted) {
-          dispatch(setLoading(false));
+        dispatch(setLoading(false));
         }
       }
     };
 
-    fetchCharacters();
+    fetchAllCharacters();
 
-    // Cleanup function to prevent memory leaks
     return () => {
       isMounted = false;
     };
-  }, [dispatch, currentPage, filters]);
+  }, [dispatch, filters, pageSize]);
 
   /**
    * Get appropriate status color for character status chip
@@ -283,16 +344,34 @@ const CharacterTable = React.memo(() => {
   }, [dispatch]);
 
   /**
+   * Get current page characters with virtual pagination
+   * Slices the allCharacters array based on current page and page size
+   */
+  const getCurrentPageCharacters = useMemo(() => {
+    if (!Array.isArray(allCharacters) || allCharacters.length === 0) {
+      return [];
+    }
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    
+    return allCharacters.slice(startIndex, endIndex);
+  }, [allCharacters, currentPage, pageSize]);
+
+  /**
    * Memoized character rows for optimal performance
    * Only re-renders when dependencies change
    */
   const memoizedCharacters = useMemo(() => {
+    // Use current page characters instead of all characters
+    const charactersToShow = getCurrentPageCharacters;
+    
     // Safety check for characters array
-    if (!Array.isArray(characters)) {
+    if (!Array.isArray(charactersToShow)) {
       return [];
     }
 
-    return characters.map((character) => {
+    return charactersToShow.map((character) => {
       // Validate character object structure
       if (!character || !character.id) {
         console.warn('Invalid character object in array:', character);
@@ -300,21 +379,21 @@ const CharacterTable = React.memo(() => {
       }
 
       return (
-        <React.Fragment key={character.id}>
+      <React.Fragment key={character.id}>
           {/* Main character row */}
-          <TableRow
-            hover
+        <TableRow
+          hover
             onClick={() => handleCharacterSelect(character)}
-            sx={{ 
+          sx={{ 
               cursor: 'pointer',
-              backgroundColor: theme.palette.mode === 'light' ? '#FFFFFF' : '#1a1a1a',
-              '&:hover': {
-                backgroundColor: theme.palette.mode === 'light' 
-                  ? 'rgba(5, 150, 105, 0.1)' 
-                  : 'rgba(4, 181, 189, 0.3)',
-              },
-            }}
-          >
+            backgroundColor: theme.palette.mode === 'light' ? '#FFFFFF' : '#1a1a1a',
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'light' 
+                ? 'rgba(5, 150, 105, 0.1)' 
+                : 'rgba(4, 181, 189, 0.3)',
+            },
+          }}
+        >
             {/* Character ID */}
             <TableCell sx={{ 
               color: theme.palette.text.primary, 
@@ -330,11 +409,11 @@ const CharacterTable = React.memo(() => {
               textAlign: 'center',
               padding: isMobile ? '8px 4px' : '16px'
             }}>
-              <CharacterImage
-                src={character.image}
+            <CharacterImage
+              src={character.image}
                 alt={`${character.name} character image`}
-              />
-            </TableCell>
+            />
+          </TableCell>
             
             {/* Character Name */}
             <TableCell sx={{ padding: isMobile ? '8px 4px' : '16px' }}>
@@ -348,74 +427,74 @@ const CharacterTable = React.memo(() => {
                 }}
               >
                 {character.name || 'Unknown'}
-              </Typography>
-            </TableCell>
+            </Typography>
+          </TableCell>
             
             {/* Character Status */}
             <TableCell sx={{ padding: isMobile ? '8px 4px' : '16px' }}>
-              <Chip 
+            <Chip 
                 label={character.status || 'Unknown'}
-                color={getStatusColor(character.status)}
+              color={getStatusColor(character.status)}
                 size={isMobile ? "small" : "medium"}
-                variant="filled"
+              variant="filled"
                 sx={{
                   fontSize: isMobile ? '0.7rem' : '0.8rem',
                   height: isMobile ? '20px' : 'auto'
                 }}
-              />
-            </TableCell>
+            />
+          </TableCell>
 
             {/* Desktop-only columns */}
-            {!isMobile && (
-              <>
-                <TableCell>
+          {!isMobile && (
+            <>
+              <TableCell>
                   <Typography variant="body2" sx={{ 
                     fontWeight: 'medium', 
                     color: theme.palette.text.secondary 
                   }}>
                     {character.species || 'Unknown'}
-                  </Typography>
-                </TableCell>
-                <TableCell>
+                </Typography>
+              </TableCell>
+              <TableCell>
                   <Typography variant="body2" sx={{ 
                     color: theme.palette.text.secondary 
                   }}>
                     {character.gender || 'Unknown'}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{ 
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '200px',
-                    color: theme.palette.text.secondary
-                  }}>
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2" sx={{ 
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '200px',
+                  color: theme.palette.text.secondary
+                }}>
                     {character.origin?.name || 'Unknown'}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{ 
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '200px',
-                    color: theme.palette.text.secondary
-                  }}>
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2" sx={{ 
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '200px',
+                  color: theme.palette.text.secondary
+                }}>
                     {character.location?.name || 'Unknown'}
-                  </Typography>
-                </TableCell>
-              </>
-            )}
+                </Typography>
+              </TableCell>
+            </>
+          )}
 
 
           </TableRow>
           
 
-        </React.Fragment>
+      </React.Fragment>
       );
     }).filter(Boolean); // Remove null entries from invalid characters
-  }, [characters, isMobile, getStatusColor, handleCharacterSelect, theme]);
+  }, [getCurrentPageCharacters, isMobile, getStatusColor, handleCharacterSelect, theme]);
 
   // Loading state with accessible spinner
   if (loading) {
@@ -465,7 +544,7 @@ const CharacterTable = React.memo(() => {
               onClick={() => window.location.reload()}
             >
               Retry
-            </Typography>
+        </Typography>
           }
         >
           {error}
@@ -475,7 +554,7 @@ const CharacterTable = React.memo(() => {
   }
 
   // Empty state
-  if (!characters.length) {
+  if (!allCharacters.length && !loading) {
     return (
       <Box 
         display="flex" 
@@ -492,6 +571,7 @@ const CharacterTable = React.memo(() => {
 
   // Main table render
   return (
+    <Box>
     <ModernTableCard elevation={0}>
       <TableContainer sx={{ 
         borderRadius: '12px', 
@@ -521,24 +601,24 @@ const CharacterTable = React.memo(() => {
           aria-label="Characters table"
         >
           {/* Table header */}
-          <TableHead sx={{ overflow: 'hidden' }}>
-            <TableRow
-              sx={{
-                background: theme.palette.mode === 'light'
-                  ? 'linear-gradient(90deg, #059669 0%, #0EA5E9 100%)'
-                  : 'linear-gradient(90deg, #00E5A0 0%, #00D4FF 100%)',
-                '& th': {
-                  color: '#FFFFFF',
-                  fontWeight: 700,
+            <TableHead sx={{ overflow: 'hidden' }}>
+              <TableRow
+                sx={{
+                  background: theme.palette.mode === 'light'
+                    ? 'linear-gradient(90deg, #059669 0%, #0EA5E9 100%)'
+                    : 'linear-gradient(90deg, #00E5A0 0%, #00D4FF 100%)',
+                  '& th': {
+                    color: '#FFFFFF',
+                    fontWeight: 700,
                   fontSize: isMobile ? '0.8rem' : '1rem',
-                  letterSpacing: '0.5px',
-                  borderBottom: 'none',
-                  background: 'none',
-                  textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    borderBottom: 'none',
+                    background: 'none',
+                    textTransform: 'uppercase',
                   padding: isMobile ? '8px 4px' : '16px',
-                },
-              }}
-            >
+                  },
+                }}
+              >
               <TableCell sx={{ width: isMobile ? '50px' : '80px', textAlign: 'center' }}>
                 ID
               </TableCell>
@@ -551,26 +631,37 @@ const CharacterTable = React.memo(() => {
               <TableCell sx={{ width: isMobile ? '80px' : '120px' }}>
                 Status
               </TableCell>
-              {!isMobile && (
-                <>
-                  <TableCell sx={{ width: '120px' }}>Species</TableCell>
-                  <TableCell sx={{ width: '100px' }}>Gender</TableCell>
-                  <TableCell>Origin</TableCell>
-                  <TableCell>Location</TableCell>
-                </>
-              )}
+                {!isMobile && (
+                  <>
+                    <TableCell sx={{ width: '120px' }}>Species</TableCell>
+                    <TableCell sx={{ width: '100px' }}>Gender</TableCell>
+                    <TableCell>Origin</TableCell>
+                    <TableCell>Location</TableCell>
+                  </>
+                )}
 
-            </TableRow>
-          </TableHead>
+              </TableRow>
+            </TableHead>
           
           {/* Table body */}
-          <TableBody>
-            {memoizedCharacters}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </ModernTableCard>
-  );
+            <TableBody>
+              {memoizedCharacters}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </ModernTableCard>
+      
+      {/* Pagination Control */}
+      <PaginationControl
+        currentPage={currentPage}
+        totalPages={Math.ceil(totalCount / pageSize)}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
+  </Box>
+    );
 });
 
 // Add PropTypes for the main component (currently no props, but good practice)

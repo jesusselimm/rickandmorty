@@ -5,7 +5,6 @@ import { createTheme } from '@mui/material/styles';
 import { useMemo, useEffect } from 'react';
 import CharactersTable from './components/CharactersTable';
 import FilterForm from './components/FilterForm';
-import Pagination from './components/Pagination';
 import CharacterDetail from './components/CharacterDetail';
 
 const createAppTheme = (mode) => createTheme({
@@ -368,7 +367,6 @@ function App() {
           </Box>
           <FilterForm />
           <CharactersTable />
-          <Pagination />
           <CharacterDetail />
         </Container>
       </ThemeProvider>

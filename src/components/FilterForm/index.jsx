@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { RemoveScroll } from 'react-remove-scroll';
 import {
   Box,
   TextField,
@@ -119,6 +120,8 @@ const FilterForm = React.memo(() => {
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
   const [tempFilters, setTempFilters] = useState(filters);
 
+
+
   const handleFilterChange = useCallback((field, value) => {
     if (isMobile) {
       setTempFilters(prev => ({ ...prev, [field]: value }));
@@ -143,6 +146,21 @@ const FilterForm = React.memo(() => {
       dispatch(setPagination({ currentPage: 1 }));
     }
   }, [isMobile, dispatch]);
+
+  // Mobile clear filters - directly apply and close modal
+  const mobileClearFilters = useCallback(() => {
+    const emptyFilters = {
+      name: '',
+      status: '',
+      species: '',
+      gender: '',
+    };
+    
+    setTempFilters(emptyFilters);
+    dispatch(setFilters(emptyFilters));
+    dispatch(setPagination({ currentPage: 1 }));
+    setMobileModalOpen(false);
+  }, [dispatch]);
 
   const handleMobileApply = useCallback(() => {
     dispatch(setFilters(tempFilters));
@@ -170,7 +188,7 @@ const FilterForm = React.memo(() => {
   // Mobile version - show header with filter button
   if (isMobile) {
     return (
-      <>
+      <RemoveScroll enabled={mobileModalOpen}>
         <Fade in={true} timeout={600}>
           <ModernFilterCard elevation={3} sx={{ py: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 } }}>
             {/* Header Section */}
@@ -186,7 +204,9 @@ const FilterForm = React.memo(() => {
                   variant="h6" 
                   sx={{
                     fontWeight: 700,
-                    background: 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
+                    background: theme.palette.mode === 'light'
+                      ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
+                      : 'linear-gradient(135deg, #FF6B9D 0%, #FFB800 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
@@ -277,12 +297,34 @@ const FilterForm = React.memo(() => {
           onClose={handleMobileCancel}
           maxWidth="sm"
           fullWidth
+          disableScrollLock={false}
+          scroll="paper"
+          keepMounted={false}
+          disablePortal={false}
+          disableEnforceFocus={false}
+          disableAutoFocus={false}
+          disableRestoreFocus={false}
+          hideBackdrop={false}
           PaperProps={{
             sx: {
               background: 'rgba(22, 27, 46, 0.95)',
               backdropFilter: 'blur(20px)',
               border: '1px solid rgba(0, 229, 160, 0.2)',
               borderRadius: '20px',
+              maxHeight: '90vh',
+              overflow: 'hidden',
+            },
+          }}
+          BackdropProps={{
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+            },
+          }}
+          sx={{
+            zIndex: 1300,
+            '& .MuiDialog-container': {
+              overscrollBehavior: 'contain',
             },
           }}
         >
@@ -291,7 +333,9 @@ const FilterForm = React.memo(() => {
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
-              background: 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
+              background: theme.palette.mode === 'light'
+                ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
+                : 'linear-gradient(135deg, #FF6B9D 0%, #FFB800 100%)',
               color: '#0B0D17',
               fontWeight: 700,
             }}
@@ -497,7 +541,7 @@ const FilterForm = React.memo(() => {
             gap: 2,
           }}>
             <ClearButton
-              onClick={clearFilters}
+              onClick={mobileClearFilters}
               startIcon={<ClearIcon />}
               fullWidth
             >
@@ -524,7 +568,7 @@ const FilterForm = React.memo(() => {
             </Button>
           </DialogActions>
         </Dialog>
-      </>
+      </RemoveScroll>
     );
   }
 
@@ -537,7 +581,9 @@ const FilterForm = React.memo(() => {
             variant="h6" 
             sx={{
               fontWeight: 700,
-              background: 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
+              background: theme.palette.mode === 'light'
+                ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
+                : 'linear-gradient(135deg, #FF6B9D 0%, #FFB800 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',

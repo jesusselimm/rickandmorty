@@ -165,6 +165,9 @@ const CharacterDetail = () => {
           maxWidth: isSmallMobile ? '100%' : '400px',
         },
       }}
+      sx={{
+        zIndex: 1400,
+      }}
     >
       {/* Modern Profile Card Container */}
       <Box

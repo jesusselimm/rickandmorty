@@ -14,6 +14,7 @@ const initialState = {
   pagination: {
     currentPage: 1,
     totalPages: 0,
+    pageSize: 20, // Default Rick and Morty API page size
   },
 };
 
