@@ -350,6 +350,7 @@ function App() {
                 backgroundClip: 'text',
                 textShadow: '0 4px 20px rgba(0, 229, 160, 0.3)',
                 animation: 'fadeInUp 1s ease-out',
+                fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
               }}
             >
               Rick and Morty Characters

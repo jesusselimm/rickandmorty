@@ -13,15 +13,11 @@ import {
   Typography,
   Box,
   Chip,
-  IconButton,
-  Collapse,
   useMediaQuery,
   useTheme,
   Alert,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 // Services and Redux
 import { getCharacters } from '../../services/api';
@@ -188,32 +184,7 @@ const CharacterTable = React.memo(() => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  // Local state for mobile expanded rows
-  const [expandedRows, setExpandedRows] = useState(new Set());
 
-  /**
-   * Toggle expanded state for mobile character details
-   * Uses Set for optimal performance with large datasets
-   * 
-   * @param {number} characterId - ID of the character to toggle
-   */
-  const toggleExpanded = useCallback((characterId) => {
-    // Input validation
-    if (!characterId || typeof characterId !== 'number') {
-      console.warn('Invalid character ID provided to toggleExpanded');
-      return;
-    }
-
-    setExpandedRows(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(characterId)) {
-        newSet.delete(characterId);
-      } else {
-        newSet.add(characterId);
-      }
-      return newSet;
-    });
-  }, []);
 
   /**
    * Fetch characters data with comprehensive error handling
@@ -333,9 +304,9 @@ const CharacterTable = React.memo(() => {
           {/* Main character row */}
           <TableRow
             hover
-            onClick={() => !isMobile && handleCharacterSelect(character)}
+            onClick={() => handleCharacterSelect(character)}
             sx={{ 
-              cursor: isMobile ? 'default' : 'pointer',
+              cursor: 'pointer',
               backgroundColor: theme.palette.mode === 'light' ? '#FFFFFF' : '#1a1a1a',
               '&:hover': {
                 backgroundColor: theme.palette.mode === 'light' 
@@ -362,7 +333,6 @@ const CharacterTable = React.memo(() => {
               <CharacterImage
                 src={character.image}
                 alt={`${character.name} character image`}
-                onClick={() => isMobile && handleCharacterSelect(character)}
               />
             </TableCell>
             
@@ -438,247 +408,14 @@ const CharacterTable = React.memo(() => {
               </>
             )}
 
-            {/* Mobile expand button */}
-            {isMobile && (
-              <TableCell sx={{ 
-                textAlign: 'center',
-                padding: '8px 4px'
-              }}>
-                <IconButton 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleExpanded(character.id);
-                  }}
-                  sx={{ 
-                    color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
-                    backgroundColor: theme.palette.mode === 'light' 
-                      ? 'rgba(5, 150, 105, 0.1)' 
-                      : 'rgba(0, 229, 160, 0.1)',
-                    border: theme.palette.mode === 'light'
-                      ? '1px solid rgba(5, 150, 105, 0.2)'
-                      : '1px solid rgba(0, 229, 160, 0.2)',
-                    width: '32px',
-                    height: '32px',
-                    '&:hover': {
-                      backgroundColor: theme.palette.mode === 'light' 
-                        ? 'rgba(5, 150, 105, 0.2)' 
-                        : 'rgba(0, 229, 160, 0.2)',
-                      transform: 'scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease'
-                  }}
-                  size="small"
-                  aria-label={expandedRows.has(character.id) ? 'Collapse details' : 'Expand details'}
-                >
-                  {expandedRows.has(character.id) ? 
-                    <ExpandLessIcon fontSize="small" /> : 
-                    <ExpandMoreIcon fontSize="small" />
-                  }
-                </IconButton>
-              </TableCell>
-            )}
+
           </TableRow>
           
-          {/* Mobile expanded details row */}
-          {isMobile && (
-            <TableRow sx={{ 
-              backgroundColor: 'transparent',
-              '&:hover': { backgroundColor: 'transparent' }
-            }}>
-              <TableCell 
-                sx={{ 
-                  paddingBottom: 0, 
-                  paddingTop: 0,
-                  paddingLeft: '8px',
-                  paddingRight: '8px',
-                  border: 'none'
-                }} 
-                colSpan={5}
-              >
-                <Collapse 
-                  in={expandedRows.has(character.id)} 
-                  timeout="auto" 
-                  unmountOnExit
-                >
-                  <Box sx={{ 
-                    margin: '8px 0 16px 0', 
-                    padding: '16px', 
-                    background: theme.palette.mode === 'light' 
-                      ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)' 
-                      : 'linear-gradient(135deg, rgba(22, 27, 46, 0.95) 0%, rgba(31, 41, 55, 0.95) 100%)',
-                    backdropFilter: 'blur(20px)',
-                    borderRadius: '12px',
-                    border: theme.palette.mode === 'light'
-                      ? '2px solid rgba(5, 150, 105, 0.15)'
-                      : '2px solid rgba(0, 229, 160, 0.15)',
-                    boxShadow: theme.palette.mode === 'light'
-                      ? '0 4px 20px rgba(5, 150, 105, 0.1)'
-                      : '0 4px 20px rgba(0, 229, 160, 0.1)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '2px',
-                      background: theme.palette.mode === 'light'
-                        ? 'linear-gradient(90deg, #059669 0%, #0EA5E9 100%)'
-                        : 'linear-gradient(90deg, #00E5A0 0%, #00D4FF 100%)',
-                    },
-                  }}>
-                    {/* Expanded details header */}
-                    <Typography variant="h6" gutterBottom sx={{ 
-                      background: theme.palette.mode === 'light'
-                        ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
-                        : 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      fontWeight: 700,
-                      fontSize: '1rem',
-                      mb: 1.5,
-                    }}>
-                      Character Details
-                    </Typography>
-                    
-                    {/* Character details grid */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {/* Species */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.secondary,
-                          fontSize: '13px',
-                          fontWeight: 600,
-                        }}>
-                          Species:
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontSize: '13px',
-                          fontWeight: 500,
-                        }}>
-                          {character.species || 'Unknown'}
-                        </Typography>
-                      </Box>
-                      
-                      {/* Gender */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.secondary,
-                          fontSize: '13px',
-                          fontWeight: 600,
-                        }}>
-                          Gender:
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontSize: '13px',
-                          fontWeight: 500,
-                        }}>
-                          {character.gender || 'Unknown'}
-                        </Typography>
-                      </Box>
-                      
-                      {/* Origin */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.secondary,
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          flex: '0 0 auto',
-                          mr: 1
-                        }}>
-                          Origin:
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontSize: '13px',
-                          fontWeight: 500,
-                          textAlign: 'right',
-                          flex: 1
-                        }}>
-                          {character.origin?.name || 'Unknown'}
-                        </Typography>
-                      </Box>
-                      
-                      {/* Location */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.secondary,
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          flex: '0 0 auto',
-                          mr: 1
-                        }}>
-                          Location:
-                        </Typography>
-                        <Typography variant="body2" sx={{ 
-                          color: theme.palette.text.primary,
-                          fontSize: '13px',
-                          fontWeight: 500,
-                          textAlign: 'right',
-                          flex: 1
-                        }}>
-                          {character.location?.name || 'Unknown'}
-                        </Typography>
-                      </Box>
-                      
-                      {/* View details button */}
-                      <Box sx={{ 
-                        mt: 1, 
-                        pt: 1.5, 
-                        borderTop: theme.palette.mode === 'light'
-                          ? '1px solid rgba(5, 150, 105, 0.2)'
-                          : '1px solid rgba(0, 229, 160, 0.2)'
-                      }}>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
-                            cursor: 'pointer',
-                            textAlign: 'center',
-                            fontWeight: 700,
-                            fontSize: '13px',
-                            padding: '8px 16px',
-                            borderRadius: '20px',
-                            backgroundColor: theme.palette.mode === 'light' 
-                              ? 'rgba(5, 150, 105, 0.1)' 
-                              : 'rgba(0, 229, 160, 0.1)',
-                            border: theme.palette.mode === 'light'
-                              ? '1px solid rgba(5, 150, 105, 0.2)'
-                              : '1px solid rgba(0, 229, 160, 0.2)',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              backgroundColor: theme.palette.mode === 'light' 
-                                ? 'rgba(5, 150, 105, 0.2)' 
-                                : 'rgba(0, 229, 160, 0.2)',
-                              transform: 'translateY(-1px)',
-                            },
-                          }}
-                          onClick={() => handleCharacterSelect(character)}
-                          role="button"
-                          tabIndex={0}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              handleCharacterSelect(character);
-                            }
-                          }}
-                        >
-                          🔍 View Full Details
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                </Collapse>
-              </TableCell>
-            </TableRow>
-          )}
+
         </React.Fragment>
       );
     }).filter(Boolean); // Remove null entries from invalid characters
-  }, [characters, isMobile, expandedRows, getStatusColor, handleCharacterSelect, toggleExpanded, theme]);
+  }, [characters, isMobile, getStatusColor, handleCharacterSelect, theme]);
 
   // Loading state with accessible spinner
   if (loading) {
@@ -822,11 +559,7 @@ const CharacterTable = React.memo(() => {
                   <TableCell>Location</TableCell>
                 </>
               )}
-              {isMobile && (
-                <TableCell sx={{ width: '60px', textAlign: 'center', fontSize: '0.7rem' }}>
-                  More
-                </TableCell>
-              )}
+
             </TableRow>
           </TableHead>
           
