@@ -307,9 +307,13 @@ const FilterForm = React.memo(() => {
           hideBackdrop={false}
           PaperProps={{
             sx: {
-              background: 'rgba(22, 27, 46, 0.95)',
+              background: theme.palette.mode === 'light' 
+                ? 'rgba(255, 255, 255, 0.95)'
+                : 'rgba(22, 27, 46, 0.95)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(0, 229, 160, 0.2)',
+              border: theme.palette.mode === 'light'
+                ? '1px solid rgba(5, 150, 105, 0.2)'
+                : '1px solid rgba(0, 229, 160, 0.2)',
               borderRadius: '20px',
               maxHeight: '90vh',
               overflow: 'hidden',
@@ -335,20 +339,31 @@ const FilterForm = React.memo(() => {
               alignItems: 'center',
               background: theme.palette.mode === 'light'
                 ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
-                : 'linear-gradient(135deg, #FF6B9D 0%, #FFB800 100%)',
-              color: '#0B0D17',
+                : 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)',
+              color: '#FFFFFF',
               fontWeight: 700,
             }}
           >
-            <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
-              <FilterListIcon /> Filter Characters
+            <Typography variant="h6" sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1, 
+              fontWeight: 700,
+              background: 'linear-gradient(135deg,rgb(248, 192, 10) 50%,rgb(254, 108, 18) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              <FilterListIcon sx={{ 
+                color: '#FF4500',
+              }} /> Filter Characters
             </Typography>
             <IconButton 
               onClick={handleMobileCancel}
               sx={{ 
-                color: '#0B0D17',
+                color: '#FFFFFF',
                 '&:hover': {
-                  backgroundColor: 'rgba(11, 13, 23, 0.1)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 }
               }}
             >
@@ -358,7 +373,9 @@ const FilterForm = React.memo(() => {
           
           <DialogContent sx={{ 
             p: 3,
-            background: 'rgba(22, 27, 46, 0.95)',
+            background: theme.palette.mode === 'light' 
+              ? 'rgba(255, 255, 255, 0.95)'
+              : 'rgba(22, 27, 46, 0.95)',
           }}>
             <Stack spacing={3} sx={{ mt: 2 }}>
               {/* Name Filter */}
@@ -371,29 +388,36 @@ const FilterForm = React.memo(() => {
                 variant="outlined"
                 size="small"
                 InputProps={{
-                  startAdornment: <SearchIcon sx={{ color: '#00E5A0', mr: 1 }} />,
+                  startAdornment: <SearchIcon sx={{ 
+                    color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0', 
+                    mr: 1 
+                  }} />,
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    color: '#FFFFFF',
-                    background: 'rgba(22, 27, 46, 0.6)',
+                    color: theme.palette.mode === 'light' ? '#1F2937' : '#FFFFFF',
+                    background: theme.palette.mode === 'light' 
+                      ? 'rgba(248, 250, 252, 0.8)'
+                      : 'rgba(22, 27, 46, 0.6)',
                     borderRadius: '12px',
                     height: '40px',
                     '& fieldset': {
-                      borderColor: 'rgba(0, 229, 160, 0.3)',
+                      borderColor: theme.palette.mode === 'light'
+                        ? 'rgba(5, 150, 105, 0.3)'
+                        : 'rgba(0, 229, 160, 0.3)',
                     },
                     '&:hover fieldset': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    color: '#B8C5D6',
+                    color: theme.palette.mode === 'light' ? '#6B7280' : '#B8C5D6',
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#00E5A0',
+                    color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                   },
                 }}
               />
@@ -408,36 +432,48 @@ const FilterForm = React.memo(() => {
                 variant="outlined"
                 size="small"
                 InputProps={{
-                  startAdornment: <SearchIcon sx={{ color: '#00E5A0', mr: 1 }} />,
+                  startAdornment: <SearchIcon sx={{ 
+                    color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0', 
+                    mr: 1 
+                  }} />,
                 }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    color: '#FFFFFF',
-                    background: 'rgba(22, 27, 46, 0.6)',
+                    color: theme.palette.mode === 'light' ? '#1F2937' : '#FFFFFF',
+                    background: theme.palette.mode === 'light' 
+                      ? 'rgba(248, 250, 252, 0.8)'
+                      : 'rgba(22, 27, 46, 0.6)',
                     borderRadius: '12px',
                     height: '40px',
                     '& fieldset': {
-                      borderColor: 'rgba(0, 229, 160, 0.3)',
+                      borderColor: theme.palette.mode === 'light'
+                        ? 'rgba(5, 150, 105, 0.3)'
+                        : 'rgba(0, 229, 160, 0.3)',
                     },
                     '&:hover fieldset': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                   },
                   '& .MuiInputLabel-root': {
-                    color: '#B8C5D6',
+                    color: theme.palette.mode === 'light' ? '#6B7280' : '#B8C5D6',
                   },
                   '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#00E5A0',
+                    color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                   },
                 }}
               />
 
               {/* Status Filter */}
               <FormControl fullWidth size="small">
-                <InputLabel sx={{ color: '#B8C5D6', '&.Mui-focused': { color: '#00E5A0' } }}>
+                <InputLabel sx={{ 
+                  color: theme.palette.mode === 'light' ? '#6B7280' : '#B8C5D6', 
+                  '&.Mui-focused': { 
+                    color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0' 
+                  } 
+                }}>
                   Status
                 </InputLabel>
                 <Select
@@ -445,31 +481,41 @@ const FilterForm = React.memo(() => {
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                   label="Status"
                   sx={{
-                    color: '#FFFFFF',
-                    background: 'rgba(22, 27, 46, 0.6)',
+                    color: theme.palette.mode === 'light' ? '#1F2937' : '#FFFFFF',
+                    background: theme.palette.mode === 'light' 
+                      ? 'rgba(248, 250, 252, 0.8)'
+                      : 'rgba(22, 27, 46, 0.6)',
                     borderRadius: '12px',
                     height: '40px',
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(0, 229, 160, 0.3)',
+                      borderColor: theme.palette.mode === 'light'
+                        ? 'rgba(5, 150, 105, 0.3)'
+                        : 'rgba(0, 229, 160, 0.3)',
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                   }}
                   MenuProps={{
                     PaperProps: {
                       sx: {
-                        background: 'rgba(22, 27, 46, 0.95)',
+                        background: theme.palette.mode === 'light' 
+                          ? 'rgba(255, 255, 255, 0.95)'
+                          : 'rgba(22, 27, 46, 0.95)',
                         backdropFilter: 'blur(20px)',
-                        border: '1px solid rgba(0, 229, 160, 0.2)',
+                        border: theme.palette.mode === 'light'
+                          ? '1px solid rgba(5, 150, 105, 0.2)'
+                          : '1px solid rgba(0, 229, 160, 0.2)',
                         borderRadius: '12px',
                         '& .MuiMenuItem-root': {
-                          color: '#FFFFFF',
+                          color: theme.palette.mode === 'light' ? '#1F2937' : '#FFFFFF',
                           '&:hover': {
-                            backgroundColor: 'rgba(0, 229, 160, 0.1)',
+                            backgroundColor: theme.palette.mode === 'light'
+                              ? 'rgba(5, 150, 105, 0.1)'
+                              : 'rgba(0, 229, 160, 0.1)',
                           },
                         },
                       },
@@ -485,7 +531,12 @@ const FilterForm = React.memo(() => {
 
               {/* Gender Filter */}
               <FormControl fullWidth size="small">
-                <InputLabel sx={{ color: '#B8C5D6', '&.Mui-focused': { color: '#00E5A0' } }}>
+                <InputLabel sx={{ 
+                  color: theme.palette.mode === 'light' ? '#6B7280' : '#B8C5D6', 
+                  '&.Mui-focused': { 
+                    color: theme.palette.mode === 'light' ? '#059669' : '#00E5A0' 
+                  } 
+                }}>
                   Gender
                 </InputLabel>
                 <Select
@@ -493,31 +544,41 @@ const FilterForm = React.memo(() => {
                   onChange={(e) => handleFilterChange('gender', e.target.value)}
                   label="Gender"
                   sx={{
-                    color: '#FFFFFF',
-                    background: 'rgba(22, 27, 46, 0.6)',
+                    color: theme.palette.mode === 'light' ? '#1F2937' : '#FFFFFF',
+                    background: theme.palette.mode === 'light' 
+                      ? 'rgba(248, 250, 252, 0.8)'
+                      : 'rgba(22, 27, 46, 0.6)',
                     borderRadius: '12px',
                     height: '48px',
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(0, 229, 160, 0.3)',
+                      borderColor: theme.palette.mode === 'light'
+                        ? 'rgba(5, 150, 105, 0.3)'
+                        : 'rgba(0, 229, 160, 0.3)',
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#00E5A0',
+                      borderColor: theme.palette.mode === 'light' ? '#059669' : '#00E5A0',
                     },
                   }}
                   MenuProps={{
                     PaperProps: {
                       sx: {
-                        background: 'rgba(22, 27, 46, 0.95)',
+                        background: theme.palette.mode === 'light' 
+                          ? 'rgba(255, 255, 255, 0.95)'
+                          : 'rgba(22, 27, 46, 0.95)',
                         backdropFilter: 'blur(20px)',
-                        border: '1px solid rgba(0, 229, 160, 0.2)',
+                        border: theme.palette.mode === 'light'
+                          ? '1px solid rgba(5, 150, 105, 0.2)'
+                          : '1px solid rgba(0, 229, 160, 0.2)',
                         borderRadius: '12px',
                         '& .MuiMenuItem-root': {
-                          color: '#FFFFFF',
+                          color: theme.palette.mode === 'light' ? '#1F2937' : '#FFFFFF',
                           '&:hover': {
-                            backgroundColor: 'rgba(0, 229, 160, 0.1)',
+                            backgroundColor: theme.palette.mode === 'light'
+                              ? 'rgba(5, 150, 105, 0.1)'
+                              : 'rgba(0, 229, 160, 0.1)',
                           },
                         },
                       },
@@ -536,8 +597,12 @@ const FilterForm = React.memo(() => {
           
           <DialogActions sx={{ 
             p: 3, 
-            background: 'rgba(22, 27, 46, 0.95)',
-            borderTop: '1px solid rgba(0, 229, 160, 0.2)',
+            background: theme.palette.mode === 'light' 
+              ? 'rgba(255, 255, 255, 0.95)'
+              : 'rgba(22, 27, 46, 0.95)',
+            borderTop: theme.palette.mode === 'light'
+              ? '1px solid rgba(5, 150, 105, 0.2)'
+              : '1px solid rgba(0, 229, 160, 0.2)',
             gap: 2,
           }}>
             <ClearButton
@@ -552,15 +617,21 @@ const FilterForm = React.memo(() => {
               variant="contained"
               fullWidth
               sx={{
-                background: 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
-                color: '#0B0D17',
+                background: theme.palette.mode === 'light'
+                  ? 'linear-gradient(135deg, #059669 0%, #0EA5E9 100%)'
+                  : 'linear-gradient(135deg, #00E5A0 0%, #00D4FF 100%)',
+                color: '#FFFFFF',
                 fontWeight: 600,
                 borderRadius: '12px',
                 py: 1.5,
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #4FFFC4 0%, #5DDDFF 100%)',
+                  background: theme.palette.mode === 'light'
+                    ? 'linear-gradient(135deg, #047857 0%, #0284C7 100%)'
+                    : 'linear-gradient(135deg, #4FFFC4 0%, #5DDDFF 100%)',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 20px rgba(0, 229, 160, 0.3)',
+                  boxShadow: theme.palette.mode === 'light'
+                    ? '0 8px 20px rgba(5, 150, 105, 0.3)'
+                    : '0 8px 20px rgba(0, 229, 160, 0.3)',
                 },
               }}
             >

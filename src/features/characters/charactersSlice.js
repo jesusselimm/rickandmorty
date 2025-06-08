@@ -16,6 +16,10 @@ const initialState = {
     totalPages: 0,
     pageSize: 20, // Default Rick and Morty API page size
   },
+  sorting: {
+    field: null, // Field to sort by (name, status, species, gender, etc.)
+    direction: 'asc', // Sort direction (asc or desc)
+  },
 };
 
 const charactersSlice = createSlice({
@@ -40,6 +44,18 @@ const charactersSlice = createSlice({
     setPagination: (state, action) => {
       state.pagination = { ...state.pagination, ...action.payload };
     },
+    setSorting: (state, action) => {
+      const { field } = action.payload;
+      
+      // If clicking same field, toggle direction
+      if (state.sorting.field === field) {
+        state.sorting.direction = state.sorting.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        // If clicking different field, set new field and default to asc
+        state.sorting.field = field;
+        state.sorting.direction = 'asc';
+      }
+    },
   },
 });
 
@@ -50,6 +66,7 @@ export const {
   setError,
   setFilters,
   setPagination,
+  setSorting,
 } = charactersSlice.actions;
 
 export default charactersSlice.reducer; 

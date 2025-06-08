@@ -18,6 +18,8 @@ import {
   Alert,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 // Components
 import PaginationControl from '../PaginationControl';
@@ -30,6 +32,7 @@ import {
   setLoading,
   setError,
   setPagination,
+  setSorting,
 } from '../../features/characters/charactersSlice';
 
 /**
@@ -181,6 +184,7 @@ const CharacterTable = React.memo(() => {
     error = null,
     filters = {},
     pagination: { currentPage = 1, totalPages = 0, pageSize = 20 } = {}, // Safe destructuring with defaults
+    sorting: { field: sortField = null, direction: sortDirection = 'asc' } = {}, // Sorting state
   } = useSelector((state) => state.characters || {});
 
   // Local state for managing all fetched characters and virtual pagination
@@ -344,19 +348,125 @@ const CharacterTable = React.memo(() => {
   }, [dispatch]);
 
   /**
+   * Handle column sorting
+   * Dispatches setSorting action with field name
+   * 
+   * @param {string} field - Field name to sort by
+   */
+  const handleSort = useCallback((field) => {
+    dispatch(setSorting({ field }));
+    // Reset to first page when sorting changes
+    dispatch(setPagination({ currentPage: 1 }));
+  }, [dispatch]);
+
+  /**
+   * Render sortable column header with icon
+   * 
+   * @param {string} field - Field name
+   * @param {string} label - Display label
+   * @param {object} sx - Additional styles
+   */
+  const renderSortableHeader = useCallback((field, label, sx = {}) => {
+    const isActive = sortField === field;
+    const isAsc = sortDirection === 'asc';
+    
+    return (
+      <TableCell
+        onClick={() => handleSort(field)}
+        sx={{
+          cursor: 'pointer',
+          userSelect: 'none',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.16)',
+          },
+          ...sx,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <span>{label}</span>
+          {isActive ? (
+            isAsc ? (
+              <ArrowUpwardIcon sx={{ fontSize: '16px', opacity: 0.6 }} />
+            ) : (
+              <ArrowDownwardIcon sx={{ fontSize: '16px', opacity: 0.6 }} />
+            )
+          ) : (
+            <Box sx={{ width: '16px', opacity: 0.3 }}>
+              <ArrowUpwardIcon sx={{ fontSize: '12px' }} />
+            </Box>
+          )}
+        </Box>
+      </TableCell>
+    );
+  }, [sortField, sortDirection, handleSort]);
+
+  /**
    * Get current page characters with virtual pagination
    * Slices the allCharacters array based on current page and page size
    */
-  const getCurrentPageCharacters = useMemo(() => {
+    const getCurrentPageCharacters = useMemo(() => {
     if (!Array.isArray(allCharacters) || allCharacters.length === 0) {
       return [];
     }
-
+    
+    // Sort characters if sorting is applied
+    let sortedCharacters = [...allCharacters];
+    
+    if (sortField) {
+      sortedCharacters.sort((a, b) => {
+        let aValue = '';
+        let bValue = '';
+        
+        // Get values based on sort field
+        switch (sortField) {
+          case 'name':
+            aValue = (a.name || '').toLowerCase();
+            bValue = (b.name || '').toLowerCase();
+            break;
+          case 'status':
+            aValue = (a.status || '').toLowerCase();
+            bValue = (b.status || '').toLowerCase();
+            break;
+          case 'species':
+            aValue = (a.species || '').toLowerCase();
+            bValue = (b.species || '').toLowerCase();
+            break;
+          case 'gender':
+            aValue = (a.gender || '').toLowerCase();
+            bValue = (b.gender || '').toLowerCase();
+            break;
+          case 'origin':
+            aValue = (a.origin?.name || '').toLowerCase();
+            bValue = (b.origin?.name || '').toLowerCase();
+            break;
+          case 'location':
+            aValue = (a.location?.name || '').toLowerCase();
+            bValue = (b.location?.name || '').toLowerCase();
+            break;
+          case 'id':
+            aValue = a.id || 0;
+            bValue = b.id || 0;
+            break;
+          default:
+            return 0;
+        }
+        
+        // Handle numeric vs string comparison
+        if (sortField === 'id') {
+          return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        } else {
+          if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+          if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+          return 0;
+        }
+      });
+    }
+    
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     
-    return allCharacters.slice(startIndex, endIndex);
-  }, [allCharacters, currentPage, pageSize]);
+    return sortedCharacters.slice(startIndex, endIndex);
+  }, [allCharacters, currentPage, pageSize, sortField, sortDirection]);
 
   /**
    * Memoized character rows for optimal performance
@@ -619,26 +729,31 @@ const CharacterTable = React.memo(() => {
                   },
                 }}
               >
-              <TableCell sx={{ width: isMobile ? '50px' : '80px', textAlign: 'center' }}>
-                ID
-              </TableCell>
+              {renderSortableHeader('id', 'ID', { 
+                width: isMobile ? '50px' : '80px', 
+                textAlign: 'center' 
+              })}
+              
               <TableCell sx={{ width: isMobile ? '60px' : '80px', textAlign: 'center' }}>
                 IMG
               </TableCell>
-              <TableCell sx={{ width: isMobile ? '120px' : '200px' }}>
-                Name
-              </TableCell>
-              <TableCell sx={{ width: isMobile ? '80px' : '120px' }}>
-                Status
-              </TableCell>
-                {!isMobile && (
-                  <>
-                    <TableCell sx={{ width: '120px' }}>Species</TableCell>
-                    <TableCell sx={{ width: '100px' }}>Gender</TableCell>
-                    <TableCell>Origin</TableCell>
-                    <TableCell>Location</TableCell>
-                  </>
-                )}
+              
+              {renderSortableHeader('name', 'Name', { 
+                width: isMobile ? '120px' : '200px' 
+              })}
+              
+              {renderSortableHeader('status', 'Status', { 
+                width: isMobile ? '80px' : '120px' 
+              })}
+              
+              {!isMobile && (
+                <>
+                  {renderSortableHeader('species', 'Species', { width: '120px' })}
+                  {renderSortableHeader('gender', 'Gender', { width: '100px' })}
+                  {renderSortableHeader('origin', 'Origin')}
+                  {renderSortableHeader('location', 'Location')}
+                </>
+              )}
 
               </TableRow>
             </TableHead>

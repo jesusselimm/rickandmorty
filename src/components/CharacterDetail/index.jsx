@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
+import { RemoveScroll } from 'react-remove-scroll';
 import {
   Dialog,
   DialogContent,
@@ -145,7 +146,8 @@ const CharacterDetail = () => {
   };
 
   return (
-    <Dialog
+    <RemoveScroll enabled={!!selectedCharacter}>
+      <Dialog
       open={!!selectedCharacter}
       onClose={handleClose}
       fullScreen={isSmallMobile}
@@ -163,6 +165,12 @@ const CharacterDetail = () => {
           maxHeight: isSmallMobile ? '100vh' : '90vh',
           width: isSmallMobile ? '100%' : '400px',
           maxWidth: isSmallMobile ? '100%' : '400px',
+        },
+      }}
+      BackdropProps={{
+        sx: {
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(8px)',
         },
       }}
       sx={{
@@ -418,6 +426,7 @@ const CharacterDetail = () => {
         </Typography>
       </Box>
     </Dialog>
+    </RemoveScroll>
   );
 };
 
