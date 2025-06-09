@@ -352,7 +352,7 @@ function App() {
                 fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
               }}
             >
-              Rick and Morty Characters
+              🛸 Rick and Morty Characters
             </Typography>
             <Typography
               variant="h6"
