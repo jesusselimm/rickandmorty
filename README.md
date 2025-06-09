@@ -213,7 +213,19 @@ npm run build
 - **Firebase Hosting:** Deploy with Firebase CLI
 
 ### Environment Variables
-No environment variables required - the app uses the public Rick and Morty API.
+### Environment Variables
+
+For security and configuration management, copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Required environment variables:
+- `VITE_API_URL`: Rick and Morty API base URL (defaults to public API)
+- `VITE_APP_ENV`: Application environment (development/production)
+
+**Security Note**: Never commit `.env` files to version control. They are already excluded in `.gitignore`.
 
 ## 🤝 Contributing
 
